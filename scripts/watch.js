@@ -1,19 +1,26 @@
 const path = require('path')
 const chokidar = require('chokidar')
-
 const chalk = require('chalk')
-
-console.log(chalk.greenBright(chalk.bold('Watching for changes...')))
-
 const { build } = require('./build')
 
 const INIT_CWD = process.env.INIT_CWD
 
-chokidar
-  .watch(INIT_CWD, { ignored: path.join(INIT_CWD, 'dist') })
-  .on('change', (event, path) => {
-    const file = event.match(/([^\/]+)$/)[1]
+const options = {
+  ignored: path.join(INIT_CWD, 'dist'),
+  awaitWriteFinish: {
+    stabilityThreshold: 50,
+    pollInterval: 50
+  }
+}
 
-    console.log(`\nFile changed:\n` + chalk.greenBright(file))
-    build()
-  })
+const watcher = chokidar.watch(INIT_CWD, options)
+
+watcher.on('ready', () => {
+  const cb = () => console.log(chalk.cyanBright('Watching for changes...'))
+
+  build(cb)
+
+  watcher.on('change', () => build(cb))
+  watcher.on('add', () => build(cb))
+  watcher.on('unlink', () => build(cb))
+})

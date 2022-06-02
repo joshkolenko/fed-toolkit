@@ -39,8 +39,12 @@ exports.bundle = () => {
 
     let html = parse(
       prettier.format(fs.readFileSync(htmlFile.path, 'utf-8'), {
-        parser: 'html'
-      })
+        parser: 'html',
+        printWidth: 200
+      }),
+      {
+        comment: true
+      }
     )
 
     const elementsToBundle = html.querySelectorAll('[bundle]')
@@ -75,7 +79,11 @@ exports.bundle = () => {
     html = html.toString()
 
     if (!__config.minify) {
-      html = prettier.format(html, { parser: 'html', semi: __config.semi })
+      html = prettier.format(html, {
+        parser: 'html',
+        semi: __config.semi,
+        printWidth: 200
+      })
     }
 
     const distHTMLPath = path.join(distPath, htmlFile.name)
@@ -122,8 +130,7 @@ const bundleFile = (filePath, fileType) => {
       bundle: true,
       write: false,
       minify: __config.minify,
-      format: 'iife',
-      target: ['chrome58', 'firefox57', 'safari11', 'edge16']
+      format: 'iife'
     })
 
     return prettier.format(output.outputFiles[0].text, {

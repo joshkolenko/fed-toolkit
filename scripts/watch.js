@@ -6,7 +6,12 @@ const { build } = require('./build')
 const INIT_CWD = process.env.INIT_CWD
 
 const options = {
-  ignored: path.join(INIT_CWD, 'dist'),
+  ignored: [
+    path.join(INIT_CWD, 'dist'),
+    path.join(INIT_CWD, 'assets'),
+    path.join(INIT_CWD, 'ticket-files'),
+    path.join(INIT_CWD, 'files')
+  ],
   awaitWriteFinish: {
     stabilityThreshold: 50,
     pollInterval: 50

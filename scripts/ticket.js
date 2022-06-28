@@ -4,6 +4,7 @@ const { question, keyInYN, keyInSelect } = require('readline-sync')
 const chalk = require('chalk')
 
 const INIT_CWD = process.env.INIT_CWD
+const CWD = process.cwd()
 
 const ticket = question('Ticket ID: ')
 const description = question('Description: ')
@@ -11,7 +12,7 @@ const ticketPath = path.join(INIT_CWD, `${ticket} - ${description}`)
 const assets = question('Asset IDs (Separated by space): ')
   .split(' ')
   .map(asset => {
-    const templatesPath = path.join(__dirname, 'templates')
+    const templatesPath = path.join(CWD, 'templates')
     let templatePath = path.join(templatesPath, 'default')
 
     if (keyInYN(`Use template for ${asset}? `)) {

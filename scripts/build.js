@@ -1,31 +1,164 @@
-const fs = require('fs-extra')
-const path = require('path')
-const { bundle } = require('./bundle')
+import fs from 'fs-extra'
+import path from 'path'
+import sass from 'sass'
+import minify from 'minify'
+import { format } from 'prettier'
+import { rollup } from 'rollup'
+import { parse } from 'node-html-parser'
+import chalk from 'chalk'
+import createConfig from './createConfig.js'
 
+const CWD = process.cwd()
 const INIT_CWD = process.env.INIT_CWD
 
-exports.build = build = callback => {
-  let config = {
-    minify: false,
-    semi: true
-  }
+const build = async () => {
+  const startTime = new Date()
+  const hours = startTime.getHours()
+  const minutes = startTime.getMinutes()
+  const seconds = startTime.getSeconds()
+  const ampm = hours >= 12 ? 'PM' : 'AM'
+
+  console.log(
+    chalk.bgWhiteBright(` ${hours % 12}:${minutes}:${seconds} ${ampm} `) +
+      ` Starting build...`
+  )
 
   const configPath = path.join(INIT_CWD, 'config.json')
 
-  config = fs.existsSync(configPath)
-    ? {
-        ...config,
-        ...JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+  if (!fs.existsSync(configPath)) {
+    const assets = fs
+      .readdirSync(INIT_CWD)
+      .filter(file => file.includes('.html'))
+
+    fs.writeFileSync(path.join(INIT_CWD, 'config.json'), createConfig(assets))
+
+    console.log('No config.json found, a new one has been created.\n')
+  }
+
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+
+  try {
+    const distDir = path.join(INIT_CWD, 'dist')
+
+    if (!fs.existsSync(distDir)) {
+      fs.mkdirSync(distDir)
+    } else {
+      fs.emptyDirSync(distDir)
+    }
+
+    let nodeCount = 0
+    const assetCount = config.assets.length
+
+    for (const asset of config.assets) {
+      const assetPath = path.join(INIT_CWD, asset.path)
+
+      if (!fs.existsSync(assetPath)) {
+        throw { message: `No file found at path: ${assetPath}` }
       }
-    : config
 
-  global.__config = config
+      const document = parse(
+        format(fs.readFileSync(assetPath, 'utf-8'), {
+          parser: 'html',
+          printWidth: 150
+        }),
+        {
+          comment: true
+        }
+      )
+      const nodes = document.querySelectorAll('[bundle]')
 
-  bundle()
+      for (const node of nodes) {
+        nodeCount++
 
-  if (typeof callback === 'function') callback()
+        const filePath = path.join(INIT_CWD, node.attrs.href || node.attrs.src)
+
+        if (!fs.existsSync(filePath)) {
+          throw { message: 'File not found at:\n' + `${filePath}` }
+        }
+
+        const tag = node.tagName
+
+        let output
+
+        if (tag === 'LINK') {
+          output = format(buildCSS(filePath), { parser: 'css' })
+
+          if (config.minify) {
+            output = await minify.css(output)
+            output = `<style>${output}</style>`
+          } else {
+            output = `<style>\n${output}</style>`
+          }
+        }
+
+        if (tag === 'SCRIPT') {
+          output = format(await buildJS(filePath), { parser: 'babel' })
+
+          if (config.minify) {
+            output = await minify.js(output)
+            output = `<script>${output}</script>`
+          } else {
+            output = `<script>\n${output}</script>`
+          }
+        }
+
+        output =
+          `<!-- ${path.join(CWD, node.attrs.href || node.attrs.src)} -->` +
+          output
+
+        node.replaceWith(parse(output))
+      }
+
+      const filePath = path.join(distDir, asset.path)
+      fs.writeFileSync(filePath, document.toString())
+    }
+
+    const endTime = new Date() - startTime
+
+    const lines = [
+      chalk.greenBright(
+        `\n✓ ${nodeCount} nodes bundled into ${assetCount} ${
+          assetCount === 1 ? 'asset' : 'assets'
+        }`
+      ),
+      `Built asset directory: ${chalk.magentaBright('dist/')}`,
+      `Built assets: ${config.assets
+        .map(asset => chalk.yellowBright(asset.path))
+        .join(', ')}`,
+      chalk.cyanBright(`\nDone in ${endTime}ms`)
+    ]
+
+    console.log(lines.join('\n') + '\n')
+  } catch (error) {
+    let message = chalk.redBright('An error occurred:\n\n')
+
+    if (error.frame) {
+      const frame = chalk.whiteBright(error.frame.replace(/\^/, chalk.red('^')))
+
+      message +=
+        chalk.redBright(error.message) + '\n\n' + frame + '\n\n' + error.id
+    } else {
+      message += error.message
+    }
+
+    console.log('\n' + message + '\n')
+  }
 }
 
-if (process.argv[2] === 'bundle') {
-  build()
+const buildCSS = filePath => {
+  const result = sass.compile(filePath)
+  const output = result.css
+
+  return output
 }
+
+const buildJS = async filePath => {
+  const result = await rollup({ input: filePath })
+  const output = (await result.generate({ format: 'iife' })).output[0].code
+
+  return output
+}
+
+if (process.argv.includes('-Y')) build()
+
+export default build

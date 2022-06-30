@@ -1,15 +1,14 @@
-const path = require('path')
-const chokidar = require('chokidar')
-const chalk = require('chalk')
-const { build } = require('./build')
+import path from 'path'
+import chokidar from 'chokidar'
+import build from './build.js'
+import chalk from 'chalk'
 
 const INIT_CWD = process.env.INIT_CWD
 
 const options = {
   ignored: [
     path.join(INIT_CWD, 'dist'),
-    path.join(INIT_CWD, 'assets'),
-    path.join(INIT_CWD, 'ticket-files'),
+    path.join(INIT_CWD, 'images'),
     path.join(INIT_CWD, 'files')
   ],
   awaitWriteFinish: {
@@ -20,12 +19,19 @@ const options = {
 
 const watcher = chokidar.watch(INIT_CWD, options)
 
+const dir = INIT_CWD.match(/\/[^\/]+$/)[0]
+
+const handleWatch = () => {
+  console.clear()
+  console.log(`${chalk.cyanBright('Watching for changes in')} ${dir}\n`)
+
+  build()
+}
+
 watcher.on('ready', () => {
-  const cb = () => console.log(chalk.cyanBright('Watching for changes...'))
+  handleWatch()
 
-  build(cb)
-
-  watcher.on('change', () => build(cb))
-  watcher.on('add', () => build(cb))
-  watcher.on('unlink', () => build(cb))
+  watcher.on('change', () => handleWatch())
+  watcher.on('add', () => handleWatch())
+  watcher.on('unlink', () => handleWatch())
 })

@@ -3,24 +3,23 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "ticket": "node scripts/ticket.js",
-    "watch": "node scripts/watch.js",
-    "build": "node scripts/build.js bundle",
-    "sass": "node scripts/compile.js sass",
-    "js": "node scripts/compile.js js"
+    "new": "node scripts/new.js",
+    "build": "node scripts/build.js -Y",
+    "watch": "node scripts/watch.js"
   },
+  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "chalk": "^4.1.2",
+    "chalk": "^5.0.1",
     "chokidar": "^3.5.3",
-    "esbuild": "^0.14.39",
     "fs-extra": "^10.1.0",
     "minify": "^7.2.2",
     "node-html-parser": "^5.3.3",
     "prettier": "^2.6.2",
     "readline-sync": "^1.4.10",
+    "rollup": "^2.75.7",
     "sass": "^1.52.1"
   }
 }

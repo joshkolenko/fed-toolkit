@@ -135,9 +135,9 @@ const build = async () => {
           assetCount === 1 ? 'asset' : 'assets'
         }`
       ),
-      `Built asset directory: ${chalk.magentaBright('dist/')}`,
+      `Built asset directory: ${chalk.yellowBright('dist/')}`,
       `Built assets: ${config.assets
-        .map(asset => chalk.yellowBright(asset.path))
+        .map(asset => chalk.magentaBright(asset.path))
         .join(', ')}`,
       chalk.cyanBright(`\nDone in ${endTime}ms`)
     ]

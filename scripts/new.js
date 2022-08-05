@@ -3,10 +3,10 @@ import path from 'path'
 import { prompt, promptLoop } from 'readline-sync'
 import chalk from 'chalk'
 import createConfig from './createConfig.js'
+import clipboard from 'clipboardy'
 
 const INIT_CWD = process.env.INIT_CWD
 
-const { cyan, magenta, green, whiteBright, bgCyan, bold, dim } = chalk
 const options = {
   limit: /^(?!\s*$).+/,
   limitMessage: chalk.red('\nInput cannot be a blank string.')
@@ -18,40 +18,34 @@ const message = lines => {
 }
 
 message([
-  bgCyan(bold(' Ticket ID ')),
-  '',
-  cyan('Enter the JIRA ticket ID'),
+  chalk.cyanBright('Enter the JIRA ticket ID'),
   '',
   'This is used to generate the ticket',
   'folder and the asset comment.',
   '',
-  dim('Example: FED-12345')
+  chalk.dim('Example: FED-12345')
 ])
 
 const ticket = prompt(options)
 
 message([
-  bgCyan(bold(' Brand ')),
+  chalk.cyanBright('Enter the Brand abbreviation'),
+  chalk.cyanBright('associated with ticket: ') + ticket,
   '',
-  cyan(`Enter the Brand abbreviation associated with ${ticket}`),
+  'This is used to generate the ticket folder.',
   '',
-  'This is used to generate the ticket',
-  'folder.',
-  '',
-  dim('Example: MER')
+  chalk.dim('Example: MER')
 ])
 
 const brand = prompt(options)
 
 message([
-  bgCyan(bold(' Description ')),
-  '',
-  cyan(`Enter the description of ${ticket}`),
+  chalk.cyanBright(`Enter the description of ${ticket}`),
   '',
   'This is used to generate the ticket',
   'folder and the asset comment.',
   '',
-  dim('Example: Homepage Update')
+  chalk.dim('Example: Homepage Update')
 ])
 
 const description = prompt(options)
@@ -59,16 +53,15 @@ const description = prompt(options)
 let assets = []
 const assetLog = () => {
   message([
-    bgCyan(bold(' Content Assets ')),
-    '',
-    cyan(`Enter the IDs of content assets needed for ${ticket}`),
+    chalk.cyanBright(`Enter the IDs of content assets needed for ${ticket}`),
     '',
     'This is used to generate the html and scss files for the asset.',
-    green(`Enter 'Y' to proceed or 'D' to delete.`),
+    chalk.greenBright(`Enter 'Y' to proceed or 'D' to delete.`),
     '',
     assets.length
-      ? whiteBright('Current assets: ') + assets.map(a => magenta(a)).join(', ')
-      : dim('Example: promo-20220701')
+      ? chalk.whiteBright('Current assets: ') +
+        assets.map(a => chalk.magentaBright(a)).join(', ')
+      : chalk.dim('Example: promo-20220701')
   ])
 }
 
@@ -99,10 +92,12 @@ assets = assets.map(asset => ({
   id: asset,
   path: `${asset}.html`,
   html:
-    `<!-- Ticket: ${ticket} -->\n` +
-    `<!-- Brand: ${brand} -->\n` +
-    `<!-- Description: ${description} -->\n` +
-    `<!-- Asset: ${asset} -->\n\n` +
+    `<!--\n` +
+    `  Ticket: ${ticket}\n` +
+    `  Brand: ${brand}\n` +
+    `  Description: ${description}\n` +
+    `  Asset: ${asset}\n` +
+    `-->\n\n` +
     `<div></div>\n\n` +
     `<link rel="stylesheet" href="styles/${asset}.scss" bundle />`
 }))
@@ -139,16 +134,22 @@ fs.writeFileSync(
 
 const startOfPath = dir.replace(/\/[^\/]+$/, '')
 const endOfPath = dir.match(/\/[^\/]+$/)[0]
+const command = `cd "${endOfPath.substring(1, endOfPath.length)}"`
 
 message([
-  `Ticket folder has been generated at:`,
-  dim(startOfPath) + magenta(endOfPath),
+  chalk.dim(startOfPath) + chalk.yellowBright(endOfPath),
   '',
-  whiteBright('Assets created: ') + assets.map(a => magenta(a.id)).join(', '),
+  chalk.whiteBright('Assets created: ') +
+    assets.map(a => chalk.magentaBright(a.id)).join(', '),
+  '',
+  chalk.greenBright(command) +
+    chalk.whiteBright(' has been copied to your clipboard'),
   '',
   'From the ticket folder, run:',
   '',
-  cyan(' npm run watch'),
-  cyan(' npm run build'),
+  chalk.cyanBright(' npm run watch'),
+  chalk.cyanBright(' npm run build'),
   ''
 ])
+
+clipboard.writeSync(command)

@@ -33,7 +33,7 @@ const build = async () => {
   }
 
   console.log(
-    chalk.bgWhiteBright(formatTime(hours, minutes, seconds)) +
+    chalk.bgWhiteBright(chalk.black(formatTime(hours, minutes, seconds))) +
       ` Starting build...\n`
   )
 

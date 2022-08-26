@@ -132,12 +132,12 @@ fs.writeFileSync(
   createConfig(assets.map(asset => asset.path))
 )
 
-const startOfPath = dir.replace(/\/[^\/]+$/, '')
-const endOfPath = dir.match(/\/[^\/]+$/)[0]
-const command = `cd "${endOfPath.substring(1, endOfPath.length)}"`
+const startOfPath = path.dirname(dir)
+const endOfPath = path.basename(dir)
+const command = `cd "${endOfPath}"`
 
 message([
-  chalk.dim(startOfPath) + chalk.yellowBright(endOfPath),
+  chalk.dim(startOfPath) + ' ' + chalk.yellowBright(endOfPath),
   '',
   chalk.whiteBright('Assets created: ') +
     assets.map(a => chalk.magentaBright(a.id)).join(', '),

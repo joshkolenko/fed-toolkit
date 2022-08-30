@@ -18,9 +18,23 @@ const build = async () => {
   const seconds = startTime.getSeconds()
   const ampm = hours >= 12 ? 'PM' : 'AM'
 
+  const formatTime = (h, m, s) => {
+    const leadingZero = num => {
+      if (num < 10) return '0' + num
+      return num
+    }
+
+    h = h % 12
+    h = leadingZero(h)
+    m = leadingZero(m)
+    s = leadingZero(s)
+
+    return ` ${h}:${m}:${s} ${ampm} `
+  }
+
   console.log(
-    chalk.bgWhiteBright(` ${hours % 12}:${minutes}:${seconds} ${ampm} `) +
-      ` Starting build...`
+    chalk.bgWhiteBright(chalk.black(formatTime(hours, minutes, seconds))) +
+      ` Starting build...\n`
   )
 
   const configPath = path.join(INIT_CWD, 'config.json')
@@ -121,9 +135,9 @@ const build = async () => {
           assetCount === 1 ? 'asset' : 'assets'
         }`
       ),
-      `Built asset directory: ${chalk.magentaBright('dist/')}`,
+      `Built asset directory: ${chalk.yellowBright('dist/')}`,
       `Built assets: ${config.assets
-        .map(asset => chalk.yellowBright(asset.path))
+        .map(asset => chalk.magentaBright(asset.path))
         .join(', ')}`,
       chalk.cyanBright(`\nDone in ${endTime}ms`)
     ]

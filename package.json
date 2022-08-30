@@ -5,7 +5,8 @@
   "scripts": {
     "new": "node scripts/new.js",
     "build": "node scripts/build.js -Y",
-    "watch": "node scripts/watch.js"
+    "watch": "node scripts/watch.js",
+    "unbundle": "node scripts/unbundle.js"
   },
   "type": "module",
   "keywords": [],
@@ -14,12 +15,23 @@
   "dependencies": {
     "chalk": "^5.0.1",
     "chokidar": "^3.5.3",
+    "clipboardy": "^3.0.0",
     "fs-extra": "^10.1.0",
     "minify": "^7.2.2",
     "node-html-parser": "^5.3.3",
     "prettier": "^2.6.2",
     "readline-sync": "^1.4.10",
     "rollup": "^2.75.7",
-    "sass": "^1.52.1"
+    "sass": "^1.52.1",
+    "styleflux-web": "^0.0.2"
+  },
+  "overrides": {
+    "perfectionist": {
+      "postcss": "^7.0.36",
+      "postcss-scss": "^1.0.6"
+    }
+  },
+  "devDependencies": {
+    "mustache": "^4.2.0"
   }
 }

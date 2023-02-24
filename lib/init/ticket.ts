@@ -1,43 +1,18 @@
 import prompts from 'prompts';
 import path from 'path';
-import fs from 'fs';
+import fs from 'fs-extra';
 import chalk from 'chalk';
 import figures from 'figures';
-
-import { configPath } from './config.js';
+import clipboard from 'clipboardy';
 
 import type { ConfigObj } from '../types/config.js';
+import { getConfig } from '../get-config.js';
 
 const INIT_CWD = process.env.INIT_CWD as string;
 
 export async function generateTicket() {
   try {
-    if (!fs.existsSync(configPath)) {
-      throw `${chalk.red(figures.cross)} No ${chalk.yellow(
-        'config.json'
-      )} found. Run ${chalk.cyan(
-        `npm run init ${chalk.blue('config')}`
-      )} before running other commands.`;
-    }
-
-    const config: ConfigObj = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-
-    const requiredConfigProperties = [
-      'developer',
-      'attribute',
-      'stylesDir',
-      'jsDir',
-    ];
-
-    requiredConfigProperties.forEach(property => {
-      if (!config[property]) {
-        throw `${chalk.red(figures.cross)} No ${chalk.yellow(
-          property
-        )} property in config.json. Either add the property or run ${chalk.cyan(
-          `npm run init ${chalk.blue('config')}`
-        )} to generate a new config.json file.`;
-      }
-    });
+    const config: ConfigObj = await getConfig();
 
     interface Responses {
       ticket: string;
@@ -91,7 +66,7 @@ export async function generateTicket() {
 
     interface AssetObj {
       id: string;
-      files: Array<'scss' | 'css' | 'js'>;
+      files: Array<'scss' | 'css' | 'js' | 'html'>;
     }
 
     const assetObjs: AssetObj[] = [];
@@ -109,6 +84,7 @@ export async function generateTicket() {
             { title: 'scss-js', value: 'scss-js' },
             { title: 'css', value: 'css' },
             { title: 'css-js', value: 'css-js' },
+            { title: 'html-only', value: 'html' },
           ],
         },
         {
@@ -118,7 +94,7 @@ export async function generateTicket() {
 
       assetObjs.push({
         id: asset,
-        files: structure.split('-') as Array<'scss' | 'css' | 'js'>,
+        files: structure.split('-') as Array<'scss' | 'css' | 'js' | 'html'>,
       });
     }
 
@@ -129,10 +105,14 @@ export async function generateTicket() {
       const response = await prompts({
         type: 'confirm',
         name: 'continue',
-        message: `${chalk.grey(ticketName)} already exists. Override contents?`,
+        message: `${chalk.dim(ticketName)} already exists. Override contents?`,
       });
 
-      if (!response.continue) process.exit();
+      if (!response.continue) {
+        process.exit();
+      } else {
+        fs.emptyDirSync(ticketDir);
+      }
     } else {
       fs.mkdirSync(ticketDir);
     }
@@ -149,14 +129,16 @@ export async function generateTicket() {
         `-->\n\n` +
         `<div></div>`;
 
-      assetObj.files.forEach(ext => {
+      assetObj.files.forEach(file => {
+        if (file === 'html') return;
+
         let filePath = '',
           dirPath = '';
 
-        if (ext === 'scss' || ext === 'css') {
+        if (file === 'scss' || file === 'css') {
           const relativePath = path.join(
             config.stylesDir,
-            `${assetObj.id}.${ext}`
+            `${assetObj.id}.${file}`
           );
 
           dirPath = path.resolve(ticketDir, config.stylesDir);
@@ -165,8 +147,11 @@ export async function generateTicket() {
           html += `\n\n<link rel="stylesheet" href="${relativePath}" ${config.attribute} />`;
         }
 
-        if (ext === 'js') {
-          const relativePath = path.join(config.jsDir, `${assetObj.id}.${ext}`);
+        if (file === 'js') {
+          const relativePath = path.join(
+            config.jsDir,
+            `${assetObj.id}.${file}`
+          );
 
           dirPath = path.resolve(ticketDir, config.jsDir);
           filePath = path.resolve(ticketDir, relativePath);
@@ -187,11 +172,22 @@ export async function generateTicket() {
     });
 
     console.log(
-      `${chalk.green(figures.tick)} ${count} files created at: ${chalk.grey(
+      `${chalk.green(figures.tick)} ${count} files created at: ${chalk.dim(
         ticketDir
       )}`
     );
+
+    if (config.copyTicketPath !== false) {
+      clipboard.writeSync(`"${ticketName}"`);
+      console.log(
+        `\n${chalk.blue(figures.info)} ${chalk.cyan(
+          '"' + ticketName + '"'
+        )} copied to your clipboard`
+      );
+    }
   } catch (error) {
     console.error(error);
+  } finally {
+    process.exit();
   }
 }

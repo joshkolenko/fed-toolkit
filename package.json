@@ -5,8 +5,13 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "start": "ts-node-esm lib/watch.ts",
+    "postinstall": "ts-node-esm lib/init/index.ts config",
+    "build": "ts-node-esm lib/build/index.ts -b",
+    "watch": "ts-node-esm lib/build/index.ts -w",
     "init": "ts-node-esm lib/init/index.ts",
-    "postinstall": "npm run init config"
+    "config": "ts-node-esm lib/init/index.ts config",
+    "ticket": "ts-node-esm lib/init/index.ts ticket"
   },
   "keywords": [],
   "author": "",
@@ -14,14 +19,18 @@
   "dependencies": {
     "@joshkolenko/inline-html": "^0.2.1",
     "chalk": "^5.2.0",
+    "chokidar": "^3.5.3",
+    "clipboardy": "^3.0.0",
     "figures": "^5.0.0",
     "fs-extra": "^11.1.0",
+    "prettier": "^2.8.4",
     "prompts": "^2.4.2",
     "ts-node": "^10.9.1"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.1",
     "@types/node": "^18.11.18",
+    "@types/prettier": "^2.7.2",
     "@types/prompts": "^2.4.2"
   }
 }

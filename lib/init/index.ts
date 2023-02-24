@@ -1,11 +1,12 @@
 import chalk from 'chalk';
 import figures from 'figures';
+import prompts from 'prompts';
 
 import { generateConfig } from './config.js';
 import { generateTicket } from './ticket.js';
 
-function init() {
-  switch (process.argv[2]) {
+function run(arg: string) {
+  switch (arg) {
     case 'config':
       generateConfig();
       break;
@@ -17,14 +18,28 @@ function init() {
     default:
       console.error(
         chalk.white(
-          `${chalk.red(
-            figures.cross
-          )} To run init, pass the type of init you want to run after the command. For example: ${chalk.cyan(
-            `npm run init ${chalk.blue('config')}.`
-          )}`
+          `${chalk.red(figures.cross)} Invalid init argument ${chalk.blue(arg)}`
         )
       );
   }
 }
 
-init();
+(async () => {
+  if (process.argv[2]) {
+    run(process.argv[2]);
+  } else {
+    const { arg }: { arg: string } = await prompts(
+      {
+        name: 'arg',
+        type: 'select',
+        message: `Run which ${chalk.blue('init')} command?`,
+        choices: ['config', 'ticket'].map(c => ({ title: c, value: c })),
+      },
+      {
+        onCancel: () => process.exit(),
+      }
+    );
+
+    run(arg);
+  }
+})();

@@ -2,3 +2,5 @@ node_modules
 fed-tickets
 config.js
 .DS_Store
+sass
+.vscode

@@ -44,9 +44,9 @@ export async function build(dir: string) {
     console.log(
       `${chalk.green(figures.tick)} Compiled ${htmlFiles.length} ${chalk.yellow(
         'html'
-      )} file${htmlFiles.length === 1 ? '' : 's'}. Output at: ${
-        chalk.dim(config.outputDir) + '/'
-      }`
+      )} file${htmlFiles.length === 1 ? '' : 's'}. Output at: ${chalk.dim(
+        config.outputDir + '/'
+      )}`
     );
   } catch (error) {
     console.error(error);

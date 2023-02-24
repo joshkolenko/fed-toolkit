@@ -171,6 +171,14 @@ export async function generateTicket() {
       count++;
     });
 
+    if (Array.isArray(config.extraDirs)) {
+      config.extraDirs.forEach(extraDir => {
+        if (!fs.existsSync(path.resolve(ticketDir, extraDir))) {
+          fs.mkdirSync(path.resolve(ticketDir, extraDir));
+        }
+      });
+    }
+
     console.log(
       `${chalk.green(figures.tick)} ${count} files created at: ${chalk.dim(
         ticketDir

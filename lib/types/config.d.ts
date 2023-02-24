@@ -16,4 +16,6 @@ export interface ConfigObj {
   ignoredPaths?: string[];
   /** Option to copy ticket path to clipboard after scaffolding a new ticket */
   copyTicketPath?: boolean;
+  /** Extra directories to create when scaffolding a new ticket */
+  extraDirs?: string[];
 }

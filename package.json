@@ -17,7 +17,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@joshkolenko/inline-html": "^0.2.1",
+    "@joshkolenko/inline-html": "^0.2.3",
     "chalk": "^5.2.0",
     "chokidar": "^3.5.3",
     "clipboardy": "^3.0.0",

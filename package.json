@@ -5,7 +5,7 @@
   "scripts": {
     "new": "node scripts/new.js",
     "build": "node scripts/build.js -Y",
-    "watch": "node scripts/watch.js",
+    "watch": "node scripts/watch.js -Y",
     "unbundle": "node scripts/unbundle.js"
   },
   "type": "module",
@@ -23,7 +23,8 @@
     "readline-sync": "^1.4.10",
     "rollup": "^2.75.7",
     "sass": "^1.52.1",
-    "styleflux-web": "^0.0.2"
+    "styleflux-web": "^0.0.2",
+    "swiper": "^8.3.2"
   },
   "overrides": {
     "perfectionist": {

@@ -2,7 +2,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import { prompt, promptLoop } from 'readline-sync'
 import chalk from 'chalk'
-import createConfig from './createConfig.js'
+import createConfig from './create-config.js'
 import clipboard from 'clipboardy'
 
 const INIT_CWD = process.env.INIT_CWD
@@ -142,8 +142,7 @@ message([
   chalk.whiteBright('Assets created: ') +
     assets.map(a => chalk.magentaBright(a.id)).join(', '),
   '',
-  chalk.greenBright(command) +
-    chalk.whiteBright(' has been copied to your clipboard'),
+  chalk.greenBright(command) + chalk.whiteBright(' has been copied to your clipboard'),
   '',
   'From the ticket folder, run:',
   '',

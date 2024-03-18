@@ -40,10 +40,14 @@ const handleWatch = changePath => {
   build()
 }
 
-watcher.on('ready', () => {
-  handleWatch()
+const watch = () => {
+  watcher.on('ready', () => {
+    handleWatch()
 
-  watcher.on('change', handleWatch)
-  watcher.on('add', handleWatch)
-  watcher.on('unlink', handleWatch)
-})
+    watcher.on('change', handleWatch)
+    watcher.on('add', handleWatch)
+    watcher.on('unlink', handleWatch)
+  })
+}
+
+if (process.argv.includes('-Y')) watch()

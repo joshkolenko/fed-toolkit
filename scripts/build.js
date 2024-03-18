@@ -6,7 +6,7 @@ import { format } from 'prettier'
 import { rollup } from 'rollup'
 import { parse } from 'node-html-parser'
 import chalk from 'chalk'
-import createConfig from './createConfig.js'
+import createConfig from './create-config.js'
 
 const CWD = process.cwd()
 const INIT_CWD = process.env.INIT_CWD
@@ -40,9 +40,7 @@ const build = async () => {
   const configPath = path.join(INIT_CWD, 'config.json')
 
   if (!fs.existsSync(configPath)) {
-    const assets = fs
-      .readdirSync(INIT_CWD)
-      .filter(file => file.includes('.html'))
+    const assets = fs.readdirSync(INIT_CWD).filter(file => file.includes('.html'))
 
     fs.writeFileSync(path.join(INIT_CWD, 'config.json'), createConfig(assets))
 
@@ -73,7 +71,7 @@ const build = async () => {
       const document = parse(
         format(fs.readFileSync(assetPath, 'utf-8'), {
           parser: 'html',
-          printWidth: 150
+          printWidth: 500
         }),
         {
           comment: true
@@ -116,9 +114,7 @@ const build = async () => {
           }
         }
 
-        output =
-          `<!-- ${path.join(CWD, node.attrs.href || node.attrs.src)} -->` +
-          output
+        output = `<!-- ${path.join(CWD, node.attrs.href || node.attrs.src)} -->` + output
 
         node.replaceWith(parse(output))
       }
@@ -149,8 +145,7 @@ const build = async () => {
     if (error.frame) {
       const frame = chalk.whiteBright(error.frame.replace(/\^/, chalk.red('^')))
 
-      message +=
-        chalk.redBright(error.message) + '\n\n' + frame + '\n\n' + error.id
+      message += chalk.redBright(error.message) + '\n\n' + frame + '\n\n' + error.id
     } else {
       message += error.message
     }
@@ -167,7 +162,7 @@ const buildCSS = filePath => {
 }
 
 const buildJS = async filePath => {
-  const result = await rollup({ input: filePath })
+  const result = await rollup({ input: filePath, treeshake: false })
   const output = (await result.generate({ format: 'iife' })).output[0].code
 
   return output
